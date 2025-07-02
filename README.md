@@ -11,8 +11,6 @@ This project provides a practical way to learn how to:
 - Work with the Vulkan Video extensions to achieve hardware-accelerated encoding on any supported GPU (NVIDIA, AMD, Intel)
 - Build a cross-platform application that avoids vendor lock-in
 
-By working through the full pipeline—from rendering to encoded output—I’ll gain hands-on experience with real-world graphics/video workflows.
-
 ## Development Environment
 
 This project was built and tested on Linux (Ubuntu/Debian-based) with the following dependencies installed:
