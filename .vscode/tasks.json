@@ -1,0 +1,38 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+        "label": "Rebuild Debug",
+        "type": "shell",
+        "command": "make",
+        "args": [
+            "rebuild", "MODE=debug"
+        ],
+        "group": {
+            "kind": "build",
+            "isDefault": true
+        },
+        "problemMatcher": []
+    },
+    {
+        "label": "Rebuild Release",
+        "type": "shell",
+        "command": "make",
+        "args": [
+            "rebuild", "MODE=release"
+        ],
+        "group": "build",
+        "problemMatcher": []
+    },
+    {
+        "label": "Clean",
+        "type": "shell",
+        "command": "make",
+        "args": [
+            "clean"
+        ],
+        "group": "build",
+        "problemMatcher": []
+    }
+]
+}

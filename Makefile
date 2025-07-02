@@ -1,6 +1,14 @@
+MODE ?= debug
+ifeq ($(MODE), release)
+    CXXFLAGS := -std=c++17 -O2 -DNDEBUG
+else
+    CXXFLAGS := -std=c++17 -g -Wall -Wextra
+endif
+
 CXX := g++
-CFLAGS := -std=c++17 -O2
 LDFLAGS := -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
+
+$(info MODE=$(MODE), CXXFLAGS=$(CXXFLAGS))
 
 SRC := $(wildcard src/*.cpp)
 # Translates src/main.cpp → build/main.o
@@ -14,10 +22,12 @@ build/%.o: src/%.cpp
 	@mkdir -p build
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-.PHONY: test clean
+.PHONY: test clean rebuild
 
 test: VulkanTest
 	./VulkanTest
 
 clean:
 	rm -f $(OBJ) $(TARGET)
+
+rebuild: clean VulkanTest
