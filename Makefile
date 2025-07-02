@@ -50,7 +50,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # === Utility Targets ===
-.PHONY: test clean rebuild
+.PHONY: test clean rebuild format
 
 test: $(TARGET)
 	./$(TARGET)
@@ -59,3 +59,6 @@ clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
 
 rebuild: clean $(TARGET)
+
+format:
+	clang-format -i $(wildcard src/*.cpp src/*.hpp)
