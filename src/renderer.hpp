@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <cstring>
 #include <iostream>
+#include <map>
 #include <vector>
 
 // #include <stdexcept>
@@ -32,6 +33,7 @@ class VulkanRenderer {
 
     void init();
     void setupDebugMessenger();
+    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
     VkResult createDebugUtilsMessengerEXT(const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
                                           const VkAllocationCallbacks *pAllocator);
     void destroyDebugUtilsMessenger(const VkAllocationCallbacks *pAllocator);

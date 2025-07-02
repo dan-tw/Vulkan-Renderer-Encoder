@@ -16,6 +16,16 @@ void VulkanRenderer::setupDebugMessenger() {
     }
 
     VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
+    populateDebugMessengerCreateInfo(createInfo);
+
+    if (createDebugUtilsMessengerEXT(&createInfo, nullptr) != VK_SUCCESS) {
+        throw std::runtime_error("failed to set up debug messenger");
+    }
+}
+
+void VulkanRenderer::populateDebugMessengerCreateInfo(
+    VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
+    createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
@@ -25,10 +35,6 @@ void VulkanRenderer::setupDebugMessenger() {
                              VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     createInfo.pfnUserCallback = debugCallback;
     createInfo.pUserData = nullptr; // We are not passing any user-specific data
-
-    if (createDebugUtilsMessengerEXT(&createInfo, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("failed to set up debug messenger");
-    }
 }
 
 VkResult
@@ -75,11 +81,16 @@ void VulkanRenderer::createInstance() {
     createInfo.ppEnabledExtensionNames = extensions.data();
 
     // Enable validation layers (when running in debug mode)
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
     if (enableValidationLayers) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
+
+        populateDebugMessengerCreateInfo(debugCreateInfo);
+        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *)&debugCreateInfo;
     } else {
         createInfo.enabledLayerCount = 0;
+        createInfo.pNext = nullptr;
     }
 
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
@@ -152,7 +163,8 @@ VulkanRenderer::~VulkanRenderer() {
 //
 // VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: Diagnostic message
 // VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT: Informational message like the creation of a
-// resource VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: Message about behavior that is not
+// resource
+// VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: Message about behavior that is not
 // necessarily an error, but very likely a bug in your application
 // VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT: Message about behavior that is invalid and may
 // cause crashes
@@ -160,7 +172,8 @@ VulkanRenderer::~VulkanRenderer() {
 // messageType can be one of the following:
 //
 // VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT: Some event has happened that is unrelated to the
-// specification or performance VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT: Something has
+// specification or performance
+// VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT: Something has
 // happened that violates the specification or indicates a possible mistake
 // VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT: Potential non-optimal use of Vulkan
 //
@@ -171,7 +184,19 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderer::debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
-    std::cerr << "[" << messageSeverity << "] TYPE = " << messageType
+
+    std::map<VkDebugUtilsMessageTypeFlagsEXT, std::string> messageTypes{
+        {VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT, "General"},
+        {VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT, "Performance"},
+        {VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT, "Validation"}};
+    std::map<VkDebugUtilsMessageSeverityFlagBitsEXT, std::string> messageSeverityTypes{
+        {VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT, "Verbose"},
+        {VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT, "Info"},
+        {VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT, "Warning"},
+        {VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT, "Error"}};
+
+    std::cerr << "[" << messageSeverityTypes[messageSeverity]
+              << "] TYPE = " << messageTypes[messageType]
               << ": validation layer: " << pCallbackData->pMessage << std::endl;
 
     if (pUserData != nullptr) {
