@@ -47,6 +47,8 @@ class VulkanRenderer {
     /// The debug messenger for Vulkan validation layer messages
     VkDebugUtilsMessengerEXT debugMessenger;
 
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+
     /**
      * @brief Initialises Vulkan (instance, debug layers, etc.)
      */
@@ -82,6 +84,9 @@ class VulkanRenderer {
      * @brief Creates the Vulkan instance
      */
     void createInstance();
+
+    void pickPhysicalDevice();
+    bool isDeviceSuitable(VkPhysicalDevice device);
 
     /**
      * @brief Checks if the requested validation layers are available

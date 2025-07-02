@@ -13,6 +13,8 @@ void VulkanRenderer::init() {
 
     // Set up the debug messenger (if validation layers are enabled)
     setupDebugMessenger();
+
+    pickPhysicalDevice();
 }
 
 void VulkanRenderer::setupDebugMessenger() {
@@ -114,6 +116,42 @@ void VulkanRenderer::createInstance() {
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
         throw std::runtime_error("failed to create vulkan instance");
     }
+}
+
+void VulkanRenderer::pickPhysicalDevice() {
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+
+    if (deviceCount == 0) {
+        throw std::runtime_error("failed to find GPUs with Vulkan support");
+    }
+
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+    for (const auto &device : devices) {
+        if (isDeviceSuitable(device)) {
+            physicalDevice = device;
+            break;
+        }
+    }
+
+    if (physicalDevice == VK_NULL_HANDLE) {
+        throw std::runtime_error("failed to find suitable GPU");
+    }
+}
+
+bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device) {
+
+    // VkPhysicalDeviceProperties deviceProperties;
+    // vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+    // // Query for support of optional features like texture compression, 64 bit floats and multi
+    // // viewport rendering (e.g. VR)
+    // VkPhysicalDeviceFeatures deviceFeatures;
+    // vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+    return true;
 }
 
 bool VulkanRenderer::checkValidationLayerSupport() {
