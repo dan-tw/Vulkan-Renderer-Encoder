@@ -9,6 +9,7 @@
     "editor.formatOnSave": true,
     "editor.renderWhitespace": "all",
     "files.associations": {
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "string": "cpp"
     }
 }

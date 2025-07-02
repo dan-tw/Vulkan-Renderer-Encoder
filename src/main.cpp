@@ -1,3 +1,4 @@
+#include "logger.hpp"
 #include "renderer.hpp"
 #include "window.hpp"
 
@@ -10,9 +11,9 @@
 int main() {
 // Print the current build mode to the console
 #ifdef NDEBUG
-    std::cout << "Mode: release\n";
+    LOG_INFO("Mode: release");
 #else
-    std::cout << "Mode: debug\n";
+    LOG_INFO("Mode: debug");
 #endif
 
     try {
@@ -24,7 +25,7 @@ int main() {
         window.show();
     } catch (std::exception &e) {
         // Print any exception message and exit with failure
-        std::cerr << e.what() << std::endl;
+        LOG_ERROR(e.what());
         return EXIT_FAILURE;
     }
 

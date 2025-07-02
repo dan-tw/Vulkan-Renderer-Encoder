@@ -1,11 +1,12 @@
 #include "renderer.hpp"
+#include "logger.hpp"
 
 VulkanRenderer::VulkanRenderer() {
     init();
 }
 
 void VulkanRenderer::init() {
-    std::cout << "Initialising Vulkan renderer..." << std::endl;
+    LOG_INFO("Initialising Vulkan renderer...");
 
     // Create the Vulkan instance (entry point into the Vulkan API)
     createInstance();
@@ -165,7 +166,7 @@ std::vector<const char *> VulkanRenderer::getRequiredExtensions() {
 }
 
 void VulkanRenderer::shutdown() {
-    std::cout << "Shutting down Vulkan renderer." << std::endl;
+    LOG_INFO("Shutting down Vulkan renderer.");
 
     if (enableValidationLayers) {
         destroyDebugUtilsMessenger(nullptr);
@@ -194,14 +195,13 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderer::debugCallback(
         {VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT, "Warning"},
         {VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT, "Error"}};
 
-    // Log formatted debug message to stderr
-    std::cerr << "[" << messageSeverityTypes[messageSeverity]
-              << "] TYPE = " << messageTypes[messageType]
-              << ": validation layer: " << pCallbackData->pMessage << std::endl;
+    // Log formatted debug message
+    LOG_DEBUG("SEVERITY = " + messageSeverityTypes[messageSeverity] +
+              ", TYPE = " + messageTypes[messageType] + ": " + pCallbackData->pMessage);
 
-    // Optionally print user data
+    // Optionally log user data
     if (pUserData != nullptr) {
-        std::cerr << pUserData << std::endl;
+        LOG_DEBUG("User data: " + std::string((char *)pUserData));
     }
 
     return VK_FALSE; // Always return false to not interrupt Vulkan calls

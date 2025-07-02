@@ -1,7 +1,8 @@
 #include "window.hpp"
+#include "logger.hpp"
 
 void VulkanWindow::init() {
-    std::cout << "Initialising window..." << std::endl;
+    LOG_INFO("Initialising window...");
 
     // Initialise the GLFW library
     if (!glfwInit()) {
@@ -35,7 +36,7 @@ VulkanWindow::VulkanWindow() {
 }
 
 VulkanWindow::~VulkanWindow() {
-    std::cout << "Shutting down window." << std::endl;
+    LOG_INFO("Shutting down window.");
 
     // Destroy the GLFW window if it was successfully created
     if (window != nullptr) {
