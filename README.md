@@ -1,7 +1,7 @@
 
 # Vulkan Renderer to H.264 Encoder
 
-A simple real-time graphics application using Vulkan that renders frames on the GPU and encodes them into an H.264 video using GPU-accelerated encoders such as Vulkan Video. This simulates the workflow of a lightweight game capture or visualization pipeline.
+A real-time graphics application using Vulkan that renders frames on the GPU and encodes them into an H.264 video using GPU-accelerated encoders such as Vulkan Video. This simulates the workflow of a lightweight game capture or visualization pipeline.
 
 This project exists to deepen my understanding of modern GPU programming and video processing. The project bridges **real-time rendering** with **hardware-accelerated video encoding**. Rather than relying on platform-specific solutions like NVENC, this project explores **Vulkan Video**, a cross-platform and vendor-neutral API for encoding video directly from GPU-rendered content.
 
@@ -31,7 +31,7 @@ sudo apt install libglfw3-dev libglm-dev libxi-dev libxxf86vm-dev
 
 ## Building the Project
 
-Make sure you have `g++` and `make` installed. Then simply run:
+Ensure `g++` and `make` are installed. Then build the project with:
 
 ```bash
 make
@@ -55,4 +55,26 @@ make clean
 
 ## Debugging
 
-If you are attempting to debug this project, ensure that the `Vulkan SDK` is installed. See [Getting Started: Ubuntu](https://vulkan.lunarg.com/doc/view/latest/linux/getting_started_ubuntu.html)
+To debug or inspect Vulkan behavior, ensure the Vulkan SDK is installed. See the official guide: [LunarG Vulkan SDK - Getting Started on Ubuntu](https://vulkan.lunarg.com/doc/view/latest/linux/getting_started_ubuntu.html)
+
+## Cross-compiling for Windows (from Linux)
+
+Ensure that cross-compiler `MinGW-w64` is installed:
+
+```bash
+sudo apt-get install mingw-w64 gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64
+```
+
+Build Windows dependencies (GLFW, Vulkan Headers, Vulkan Loader):
+
+```bash
+./setup-windows-deps.sh
+```
+
+Compile the project for Windows:
+
+```bash
+make TARGET_OS=windows MODE=release
+```
+
+This will produce a `VulkanTest.exe`, ready to run on Windows.

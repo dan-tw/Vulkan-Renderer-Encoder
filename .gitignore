@@ -43,3 +43,4 @@
 # Additional build artifacts
 build
 VulkanTest
+thirdparty
