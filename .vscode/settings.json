@@ -3,5 +3,8 @@
         "GLFW",
         "swapchain"
     ],
-    "files.insertFinalNewline": true
+    "files.insertFinalNewline": true,
+    "editor.defaultFormatter": "ms-vscode.cpptools",
+    "editor.formatOnSave": true,
+    "editor.renderWhitespace": "all"
 }

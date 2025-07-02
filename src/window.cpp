@@ -6,7 +6,7 @@ void VulkanWindow::init() {
     // Initialise the GLFW library
     glfwInit();
 
-    // GLFW was originally designed to create an OpenGL context. 
+    // GLFW was originally designed to create an OpenGL context.
     // Here we tell it not to create an OpenGL context (since we're using Vulkan)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
@@ -19,11 +19,11 @@ void VulkanWindow::init() {
 }
 
 void VulkanWindow::show() {
-    if(window == NULL) {
+    if (window == NULL) {
         throw std::runtime_error("Window is null");
     }
 
-    while(!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
     }
 }

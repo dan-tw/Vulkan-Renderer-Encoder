@@ -52,3 +52,7 @@ To clean build artifacts:
 ```bash
 make clean
 ```
+
+## Debugging
+
+If you are attempting to debug this project, ensure that the `Vulkan SDK` is installed. See [Getting Started: Ubuntu](https://vulkan.lunarg.com/doc/view/latest/linux/getting_started_ubuntu.html)

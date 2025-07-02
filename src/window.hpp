@@ -1,21 +1,21 @@
 #pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <stdexcept>
 #include <iostream>
+#include <stdexcept>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
 class VulkanWindow {
-    public:
-        VulkanWindow();
-        ~VulkanWindow();
+  public:
+    VulkanWindow();
+    ~VulkanWindow();
 
-        void show();
+    void show();
 
-    private:
-        GLFWwindow* window;
+  protected:
+    GLFWwindow *window;
 
-        void init();
+    void init();
 };

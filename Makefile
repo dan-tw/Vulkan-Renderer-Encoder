@@ -30,4 +30,7 @@ test: VulkanTest
 clean:
 	rm -f $(OBJ) $(TARGET)
 
+format:
+	clang-format -i $(wildcard src/*.cpp src/*.hpp)
+
 rebuild: clean VulkanTest
