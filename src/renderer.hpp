@@ -18,6 +18,7 @@ const bool enableValidationLayers = true;
 #endif
 
 class VulkanRenderer {
+
   public:
     VulkanRenderer();
     ~VulkanRenderer();
@@ -27,9 +28,20 @@ class VulkanRenderer {
 
   protected:
     VkInstance instance;
+    VkDebugUtilsMessengerEXT debugMessenger;
 
     void init();
+    void setupDebugMessenger();
+    VkResult createDebugUtilsMessengerEXT(const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
+                                          const VkAllocationCallbacks *pAllocator);
+    void destroyDebugUtilsMessenger(const VkAllocationCallbacks *pAllocator);
     void createInstance();
     bool checkValidationLayerSupport();
+    std::vector<const char *> getRequiredExtensions();
     void shutdown();
+
+    static VKAPI_ATTR VkBool32 VKAPI_CALL
+    debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                  VkDebugUtilsMessageTypeFlagsEXT messageType,
+                  const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData);
 };
