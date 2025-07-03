@@ -214,7 +214,7 @@ bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device) {
     return indicies.isComplete(surface);
 }
 
-QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalDevice device) {
+VulkanRenderer::QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;
