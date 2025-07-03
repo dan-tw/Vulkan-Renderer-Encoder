@@ -211,7 +211,7 @@ void VulkanRenderer::createLogicalDevice() {
 bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device) {
     QueueFamilyIndices indicies = findQueueFamilies(device);
 
-    return indicies.isComplete();
+    return indicies.isComplete(surface);
 }
 
 QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalDevice device) {
@@ -230,7 +230,7 @@ QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalDevice device) {
         }
 
         // Stop early if all required queues are found
-        if (indices.isComplete()) {
+        if (indices.isComplete(surface)) {
             break;
         }
     }
@@ -293,10 +293,13 @@ void VulkanRenderer::shutdown() {
     if (enableValidationLayers) {
         destroyDebugUtilsMessenger(nullptr);
     }
+
     vkDestroyDevice(device, nullptr);
+
     if (surface != VK_NULL_HANDLE) {
         vkDestroySurfaceKHR(instance, surface, nullptr);
     }
+
     vkDestroyInstance(instance, nullptr);
 }
 

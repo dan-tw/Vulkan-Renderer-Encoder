@@ -1,7 +1,7 @@
 
 #pragma once
 #define GLFW_INCLUDE_VULKAN
-#include "surfaceprovider.hpp"
+#include "surface_provider.hpp"
 #include <GLFW/glfw3.h>
 #include <cstring>
 #include <iostream>
@@ -20,27 +20,6 @@ const bool enableValidationLayers = true;
 #endif
 
 /**
- * @brief Holds indices of queue families supported by a physical device
- *
- * This struct is used to track which queue families (e.g. graphics, compute, etc.)
- * are available on a Vulkan physical device. Only the graphics queue family is
- * currently required and checked.
- */
-struct QueueFamilyIndices {
-    /// @brief Index of a queue family that supports graphics commands
-    std::optional<uint32_t> graphicsFamily;
-
-    /**
-     * @brief Checks if all required queue families have been found
-     *
-     * @return true if the graphics queue family has been assigned
-     */
-    bool isComplete() {
-        return graphicsFamily.has_value();
-    }
-};
-
-/**
  * @class VulkanRenderer
  * @brief Handles Vulkan initialisation, rendering, and frame capture.
  *
@@ -50,6 +29,34 @@ struct QueueFamilyIndices {
 class VulkanRenderer {
 
   public:
+    /**
+     * @brief Holds indices of queue families supported by a physical device
+     *
+     * This struct is used to track which queue families (e.g. graphics, compute, etc.)
+     * are available on a Vulkan physical device. Only the graphics queue family is
+     * currently required and checked.
+     */
+    struct QueueFamilyIndices {
+        /// @brief Index of a queue family that supports graphics commands
+        std::optional<uint32_t> graphicsFamily;
+        std::optional<uint32_t> presentFamily;
+
+        /**
+         * @brief Checks if all required queue families have been found
+         *
+         * @return true if the graphics queue family has been assigned
+         */
+        bool isComplete(VkSurfaceKHR surface) {
+
+            // If we have no surface attached, do not check for queue family that supports drawing
+            if (surface == VK_NULL_HANDLE) {
+                return graphicsFamily.has_value();
+            }
+
+            return graphicsFamily.has_value() && presentFamily.has_value();
+        }
+    };
+
     /**
      * @brief Constructs the VulkanRenderer and initialising Vulkan resources
      */
