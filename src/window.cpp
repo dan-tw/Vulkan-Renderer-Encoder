@@ -27,6 +27,10 @@ void VulkanWindow::init() {
 }
 
 VkSurfaceKHR VulkanWindow::createSurface(VkInstance instance) {
+    if (window == nullptr) {
+        throw std::runtime_error("failed to create surface, window has not been created");
+    }
+
     VkSurfaceKHR surface;
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface");
@@ -37,7 +41,7 @@ VkSurfaceKHR VulkanWindow::createSurface(VkInstance instance) {
 void VulkanWindow::pollEvents() const {
 
     if (window == nullptr) {
-        throw std::runtime_error("Window is null");
+        throw std::runtime_error("cannot poll window events, window is null");
     }
 
     // Main window loop: poll events until the user closes the window

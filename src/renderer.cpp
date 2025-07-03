@@ -21,7 +21,6 @@ void VulkanRenderer::init() {
 
     // If we have a surface provider, create and attach the VK surface
     if (surfaceProvider) {
-        LOG_INFO("Creating surface");
         surface = surfaceProvider->createSurface(instance);
         LOG_INFO("VK surface attached");
     }
