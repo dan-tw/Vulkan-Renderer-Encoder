@@ -15,6 +15,8 @@ void VulkanRenderer::init() {
     setupDebugMessenger();
 
     pickPhysicalDevice();
+
+    createLogicalDevice();
 }
 
 void VulkanRenderer::setupDebugMessenger() {
@@ -126,9 +128,11 @@ void VulkanRenderer::pickPhysicalDevice() {
         throw std::runtime_error("failed to find GPUs with Vulkan support");
     }
 
+    // Retrieve all physical devices
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
+    // Select the first suitable physical device
     for (const auto &device : devices) {
         if (isDeviceSuitable(device)) {
             physicalDevice = device;
@@ -137,21 +141,88 @@ void VulkanRenderer::pickPhysicalDevice() {
     }
 
     if (physicalDevice == VK_NULL_HANDLE) {
-        throw std::runtime_error("failed to find suitable GPU");
+        throw std::runtime_error("failed to find a suitable GPU");
     }
+
+    // Log the selected device name
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+
+    std::string deviceName = deviceProperties.deviceName;
+    LOG_INFO("Using device " + deviceName);
+}
+
+void VulkanRenderer::createLogicalDevice() {
+    // Find queue family indices for the selected physical device
+    QueueFamilyIndices indicies = findQueueFamilies(physicalDevice);
+
+    // Specify one queue from the graphics queue family
+    VkDeviceQueueCreateInfo queueCreateInfo = {};
+    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueCreateInfo.queueFamilyIndex = indicies.graphicsFamily.value();
+    queueCreateInfo.queueCount = 1;
+    float queuePriority = 1.0f;
+    queueCreateInfo.pQueuePriorities = &queuePriority;
+
+    // Enable required device features (none for now)
+    VkPhysicalDeviceFeatures deviceFeatures = {};
+
+    // Fill in the device creation info
+    VkDeviceCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    createInfo.pQueueCreateInfos = &queueCreateInfo;
+    createInfo.queueCreateInfoCount = 1;
+
+    createInfo.pEnabledFeatures = &deviceFeatures;
+
+    // TODO: Enable extensions for H.264 encoding
+    createInfo.enabledExtensionCount = 0;
+
+    // Enable validation layers if requested
+    if (enableValidationLayers) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames = validationLayers.data();
+    } else {
+        createInfo.enabledLayerCount = 0;
+    }
+
+    // Create the logical device
+    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create logical device");
+    }
+
+    // Retrieve a handle to the graphics queue from the created device
+    vkGetDeviceQueue(device, indicies.graphicsFamily.value(), 0, &graphicsQueue);
 }
 
 bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device) {
+    QueueFamilyIndices indicies = findQueueFamilies(device);
 
-    // VkPhysicalDeviceProperties deviceProperties;
-    // vkGetPhysicalDeviceProperties(device, &deviceProperties);
+    return indicies.isComplete();
+}
 
-    // // Query for support of optional features like texture compression, 64 bit floats and multi
-    // // viewport rendering (e.g. VR)
-    // VkPhysicalDeviceFeatures deviceFeatures;
-    // vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalDevice device) {
+    QueueFamilyIndices indices;
 
-    return true;
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+    for (std::size_t i = 0; i < queueFamilies.size(); ++i) {
+        // Look for a queue family that supports graphics commands
+        if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            indices.graphicsFamily = i;
+        }
+
+        // Stop early if all required queues are found
+        if (indices.isComplete()) {
+            break;
+        }
+    }
+
+    return indices;
 }
 
 bool VulkanRenderer::checkValidationLayerSupport() {
@@ -209,7 +280,7 @@ void VulkanRenderer::shutdown() {
     if (enableValidationLayers) {
         destroyDebugUtilsMessenger(nullptr);
     }
-
+    vkDestroyDevice(device, nullptr);
     vkDestroyInstance(instance, nullptr);
 }
 

@@ -5,6 +5,7 @@
 #include <cstring>
 #include <iostream>
 #include <map>
+#include <optional>
 #include <vector>
 
 /// List of Vulkan validation layers to enable (if supported)
@@ -16,6 +17,14 @@ const bool enableValidationLayers = false;
 #else
 const bool enableValidationLayers = true;
 #endif
+
+struct QueueFamilyIndices {
+    std::optional<uint32_t> graphicsFamily;
+
+    bool isComplete() {
+        return graphicsFamily.has_value();
+    }
+};
 
 /**
  * @class VulkanRenderer
@@ -47,7 +56,18 @@ class VulkanRenderer {
     /// The debug messenger for Vulkan validation layer messages
     VkDebugUtilsMessengerEXT debugMessenger;
 
+    /// The selected physical GPU device
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+
+    /**
+     * @brief The logical device created from the selected physical GPU
+     */
+    VkDevice device;
+
+    /**
+     * @brief Graphics queue retrieved from the logical device
+     */
+    VkQueue graphicsQueue;
 
     /**
      * @brief Initialises Vulkan (instance, debug layers, etc.)
@@ -85,8 +105,45 @@ class VulkanRenderer {
      */
     void createInstance();
 
+    /**
+     * @brief Picks a suitable physical GPU device that supports required features
+     *
+     * Enumerates all Vulkan-compatible devices and selects the first one that meets
+     * application requirements
+     *
+     * @throws std::runtime_error if no suitable GPU is found
+     */
     void pickPhysicalDevice();
+
+    /**
+     * @brief Creates the Vulkan logical device and retrieves the graphics queue
+     *
+     * This function selects the appropriate queue family from the physical device,
+     * enables required features, and creates a logical device interface
+     *
+     * @throws std::runtime_error if device creation fails.
+     */
+    void createLogicalDevice();
+
+    /**
+     * @brief Checks if a given physical device is suitable for use
+     *
+     * Currently checks for graphics queue family support
+     *
+     * @param device The physical device to evaluate
+     * @return true if the device meets the required criteria
+     */
     bool isDeviceSuitable(VkPhysicalDevice device);
+
+    /**
+     * @brief Finds queue families that support required capabilities on a device
+     *
+     * Searches for queue families that support graphics commands
+     *
+     * @param device The physical device to query
+     * @return A QueueFamilyIndices struct with matching queue families
+     */
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
     /**
      * @brief Checks if the requested validation layers are available
