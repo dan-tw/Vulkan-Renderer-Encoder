@@ -4,10 +4,10 @@
 #include <iostream>
 #include <stdexcept>
 
-/// Default window width in pixels
+/// @brief Default window width in pixels
 constexpr uint32_t WIDTH = 800;
 
-/// Default window height in pixels
+/// @brief Default window height in pixels
 constexpr uint32_t HEIGHT = 600;
 
 /**
@@ -36,7 +36,7 @@ class VulkanWindow {
     void show();
 
   protected:
-    /// Pointer to the GLFW window handle
+    /// @brief Pointer to the GLFW window handle
     GLFWwindow *window;
 
     /**

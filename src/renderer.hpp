@@ -8,19 +8,32 @@
 #include <optional>
 #include <vector>
 
-/// List of Vulkan validation layers to enable (if supported)
+/// @brief List of Vulkan validation layers to enable (if supported)
 const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
-/// Whether to enable validation layers (only in debug builds)
+/// @brief Whether to enable validation layers (only in debug builds)
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
 #else
 const bool enableValidationLayers = true;
 #endif
 
+/**
+ * @brief Holds indices of queue families supported by a physical device
+ *
+ * This struct is used to track which queue families (e.g. graphics, compute, etc.)
+ * are available on a Vulkan physical device. Only the graphics queue family is
+ * currently required and checked.
+ */
 struct QueueFamilyIndices {
+    /// @brief Index of a queue family that supports graphics commands
     std::optional<uint32_t> graphicsFamily;
 
+    /**
+     * @brief Checks if all required queue families have been found
+     *
+     * @return true if the graphics queue family has been assigned
+     */
     bool isComplete() {
         return graphicsFamily.has_value();
     }
@@ -50,13 +63,13 @@ class VulkanRenderer {
     void captureFrame();
 
   protected:
-    /// The Vulkan instance used by the renderer
+    /// @brief The Vulkan instance used by the renderer
     VkInstance instance;
 
-    /// The debug messenger for Vulkan validation layer messages
+    /// @brief The debug messenger for Vulkan validation layer messages
     VkDebugUtilsMessengerEXT debugMessenger;
 
-    /// The selected physical GPU device
+    /// @brief The selected physical GPU device
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
     /**
