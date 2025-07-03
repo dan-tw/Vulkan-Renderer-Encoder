@@ -1,6 +1,7 @@
 
 #pragma once
 #define GLFW_INCLUDE_VULKAN
+#include "surfaceprovider.hpp"
 #include <GLFW/glfw3.h>
 #include <cstring>
 #include <iostream>
@@ -52,7 +53,7 @@ class VulkanRenderer {
     /**
      * @brief Constructs the VulkanRenderer and initialising Vulkan resources
      */
-    VulkanRenderer();
+    VulkanRenderer(SurfaceProvider *surfaceProvider = nullptr);
 
     /**
      * @brief Destructs the VulkanRenderer and cleans up all Vulkan resources
@@ -61,6 +62,12 @@ class VulkanRenderer {
 
     void drawFrame();
     void captureFrame();
+
+    /**
+     * @brief Returns the Vulkan instance associated with this renderer
+     * @return The VkInstance used for all Vulkan operations
+     */
+    VkInstance getInstance() const;
 
   protected:
     /// @brief The Vulkan instance used by the renderer
@@ -72,15 +79,18 @@ class VulkanRenderer {
     /// @brief The selected physical GPU device
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
-    /**
-     * @brief The logical device created from the selected physical GPU
-     */
+    /// @brief The logical device created from the selected physical GPU
     VkDevice device;
 
-    /**
-     * @brief Graphics queue retrieved from the logical device
-     */
+    /// @brief Graphics queue retrieved from the logical device
     VkQueue graphicsQueue;
+
+    /// @brief The Vulkan surface used for presentation, if attached (may be VK_NULL_HANDLE for
+    /// headless rendering)
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
+
+    /// @brief Optional surface provider used to create a rendering surface (e.g. window surface)
+    SurfaceProvider *surfaceProvider;
 
     /**
      * @brief Initialises Vulkan (instance, debug layers, etc.)

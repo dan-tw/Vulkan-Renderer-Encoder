@@ -18,11 +18,11 @@ int main() {
 
     try {
         // Create the Vulkan renderer and window
-        VulkanRenderer renderer = VulkanRenderer();
         VulkanWindow window = VulkanWindow();
+        VulkanRenderer renderer = VulkanRenderer(&window);
 
         // Show the window and start the event loop
-        window.show();
+        window.pollEvents();
     } catch (std::exception &e) {
         // Print any exception message and exit with failure
         LOG_ERROR(e.what());

@@ -1,8 +1,13 @@
 #include "renderer.hpp"
 #include "logger.hpp"
 
-VulkanRenderer::VulkanRenderer() {
+VulkanRenderer::VulkanRenderer(SurfaceProvider *surfaceProvider)
+    : surfaceProvider(surfaceProvider) {
     init();
+}
+
+VkInstance VulkanRenderer::getInstance() const {
+    return instance;
 }
 
 void VulkanRenderer::init() {
@@ -14,8 +19,17 @@ void VulkanRenderer::init() {
     // Set up the debug messenger (if validation layers are enabled)
     setupDebugMessenger();
 
+    // If we have a surface provider, create and attach the VK surface
+    if (surfaceProvider) {
+        LOG_INFO("Creating surface");
+        surface = surfaceProvider->createSurface(instance);
+        LOG_INFO("VK surface attached");
+    }
+
+    // Pick the physical device
     pickPhysicalDevice();
 
+    // Create a logical device from the physical device
     createLogicalDevice();
 }
 
@@ -260,11 +274,11 @@ void VulkanRenderer::captureFrame() {
 }
 
 std::vector<const char *> VulkanRenderer::getRequiredExtensions() {
-    uint32_t glfwExtensionCount = 0;
-    const char **glfwExtensions;
-    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    std::vector<const char *> extensions;
 
-    std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+    if (surfaceProvider) {
+        extensions = surfaceProvider->getRequiredInstanceExtensions();
+    }
 
     // Add debug utils extension if validation is enabled
     if (enableValidationLayers) {
@@ -281,6 +295,9 @@ void VulkanRenderer::shutdown() {
         destroyDebugUtilsMessenger(nullptr);
     }
     vkDestroyDevice(device, nullptr);
+    if (surface != VK_NULL_HANDLE) {
+        vkDestroySurfaceKHR(instance, surface, nullptr);
+    }
     vkDestroyInstance(instance, nullptr);
 }
 

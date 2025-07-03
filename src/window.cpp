@@ -1,6 +1,12 @@
 #include "window.hpp"
 #include "logger.hpp"
 
+VulkanWindow::VulkanWindow(const uint32_t w, const uint32_t h) {
+    width = w;
+    height = h;
+    init();
+}
+
 void VulkanWindow::init() {
     LOG_INFO("Initialising window...");
 
@@ -17,10 +23,19 @@ void VulkanWindow::init() {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     // Create the GLFW window. We're not using fullscreen (4th param) or OpenGL sharing (5th param)
-    window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+    window = glfwCreateWindow(width, height, "Vulkan", nullptr, nullptr);
 }
 
-void VulkanWindow::show() {
+VkSurfaceKHR VulkanWindow::createSurface(VkInstance instance) {
+    VkSurfaceKHR surface;
+    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create window surface");
+    }
+    return surface;
+}
+
+void VulkanWindow::pollEvents() const {
+
     if (window == nullptr) {
         throw std::runtime_error("Window is null");
     }
@@ -31,8 +46,16 @@ void VulkanWindow::show() {
     }
 }
 
-VulkanWindow::VulkanWindow() {
-    init();
+std::vector<const char *> VulkanWindow::getRequiredInstanceExtensions() const {
+    uint32_t glfwExtensionCount = 0;
+    const char **glfwExtensions;
+    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+    return std::vector<const char *>(glfwExtensions, glfwExtensions + glfwExtensionCount);
+}
+
+GLFWwindow *VulkanWindow::getGLFWWindow() const {
+    return window;
 }
 
 VulkanWindow::~VulkanWindow() {
