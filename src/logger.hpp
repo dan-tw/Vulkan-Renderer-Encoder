@@ -7,12 +7,13 @@
  * @enum LogLevel
  * @brief Represents the severity level of log messages
  *
+ * Verbose: Very detailed messages for debugging purposes
  * Debug: Detailed messages for debugging purposes
  * Info: General informational messages
  * Warn: Warnings indicating potential issues
  * Error: Errors indicating failures or critical problems
  */
-enum class LogLevel { Debug, Info, Warn, Error };
+enum class LogLevel { Verbose, Debug, Info, Warn, Error };
 
 /**
  * @class Logger
@@ -23,6 +24,9 @@ enum class LogLevel { Debug, Info, Warn, Error };
  */
 class Logger {
   public:
+    /// @brief The log level that defines which log output should be captured
+    static LogLevel logLevel;
+
     /**
      * @brief Logs a message with the specified severity level
      * @param level Severity level of the log message
@@ -41,6 +45,12 @@ class Logger {
      */
     static std::string levelToString(LogLevel level);
 };
+
+/**
+ * @def LOG_VERBOSE
+ * @brief Macro for logging a verbose-level message
+ */
+#define LOG_VERBOSE(msg) Logger::log(LogLevel::Verbose, msg)
 
 /**
  * @def LOG_DEBUG

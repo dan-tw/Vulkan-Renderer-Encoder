@@ -1,8 +1,12 @@
 #include "logger.hpp"
 
 std::mutex Logger::logMutex;
+LogLevel Logger::logLevel = LogLevel::Debug;
 
 void Logger::log(LogLevel level, const std::string &message) {
+    if (logLevel > level) {
+        return;
+    }
     // Lock mutex for thread safety
     std::lock_guard<std::mutex> lock(logMutex);
 

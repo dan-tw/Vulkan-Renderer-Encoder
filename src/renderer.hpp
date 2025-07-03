@@ -11,16 +11,6 @@
 #include <set>
 #include <vector>
 
-/// @brief List of Vulkan validation layers to enable (if supported)
-const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-
-/// @brief Whether to enable validation layers (only in debug builds)
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
-const bool enableValidationLayers = true;
-#endif
-
 /**
  * @class VulkanRenderer
  * @brief Handles Vulkan initialisation, rendering, and frame capture.
@@ -104,6 +94,22 @@ class VulkanRenderer {
     /// @brief Optional surface provider used to create a rendering surface (e.g. window surface)
     SurfaceProvider *surfaceProvider;
 
+    /// @brief List of Vulkan validation layers to enable (if supported)
+    const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+
+    /// @brief List of Vulkan device extensions to enable
+
+    std::vector<const char *> deviceExtensions = {
+        VK_KHR_VIDEO_QUEUE_EXTENSION_NAME, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+        VK_KHR_VIDEO_ENCODE_QUEUE_EXTENSION_NAME, VK_KHR_VIDEO_ENCODE_H264_EXTENSION_NAME};
+
+    /// @brief Whether to enable validation layers (only in debug builds)
+#ifdef NDEBUG
+    const bool enableValidationLayers = false;
+#else
+    const bool enableValidationLayers = true;
+#endif
+
     /**
      * @brief Initialises Vulkan (instance, debug layers, etc.)
      */
@@ -179,6 +185,8 @@ class VulkanRenderer {
      * @return A QueueFamilyIndices struct with matching queue families
      */
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 
     /**
      * @brief Checks if the requested validation layers are available

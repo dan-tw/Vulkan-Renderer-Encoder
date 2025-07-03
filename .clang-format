@@ -7,3 +7,4 @@ AllowShortFunctionsOnASingleLine: Empty
 SortIncludes: true
 IncludeBlocks: Preserve
 BreakBeforeBraces: Attach
+IndentPPDirectives: BeforeHash

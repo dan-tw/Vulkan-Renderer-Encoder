@@ -21,7 +21,11 @@ void VulkanRenderer::init() {
     // If we have a surface provider, create and attach the VK surface
     if (surfaceProvider) {
         surface = surfaceProvider->createSurface(instance);
-        LOG_INFO("VK surface attached");
+        if (surface != VK_NULL_HANDLE) {
+            LOG_DEBUG("VK surface attached. Enabling extension " +
+                      std::string(VK_KHR_SWAPCHAIN_EXTENSION_NAME));
+            deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        }
     }
 
     // Pick the physical device
@@ -99,7 +103,7 @@ void VulkanRenderer::createInstance() {
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    appInfo.apiVersion = VK_API_VERSION_1_3;
 
     // Fill in instance creation info
     VkInstanceCreateInfo createInfo = {};
@@ -169,7 +173,7 @@ void VulkanRenderer::createLogicalDevice() {
     QueueFamilyIndices indicies = findQueueFamilies(physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<u_int32_t> uniqueQueueFamilies = {indicies.graphicsFamily.value()};
+    std::set<uint32_t> uniqueQueueFamilies = {indicies.graphicsFamily.value()};
 
     // If surface is attached insert present queue family
     if (surface != VK_NULL_HANDLE) {
@@ -198,8 +202,9 @@ void VulkanRenderer::createLogicalDevice() {
 
     createInfo.pEnabledFeatures = &deviceFeatures;
 
-    // TODO: Enable extensions for H.264 encoding
-    createInfo.enabledExtensionCount = 0;
+    // Enable device extensions (e.g. H.264 encoding)
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
     // Enable validation layers if requested
     if (enableValidationLayers) {
@@ -224,9 +229,51 @@ void VulkanRenderer::createLogicalDevice() {
 }
 
 bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device) {
-    QueueFamilyIndices indicies = findQueueFamilies(device);
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(device, &deviceProperties);
+    std::string deviceName = deviceProperties.deviceName;
 
-    return indicies.isComplete(surface);
+    QueueFamilyIndices indicies = findQueueFamilies(device);
+    bool extensionsSupported = checkDeviceExtensionSupport(device);
+
+    if (!indicies.isComplete(surface)) {
+        LOG_WARN("Device " + std::string(deviceProperties.deviceName) +
+                 " is missing required queue families");
+    }
+
+    if (!extensionsSupported) {
+        LOG_WARN("Device " + std::string(deviceProperties.deviceName) +
+                 " is missing required extensions");
+    }
+
+    return indicies.isComplete(surface) && extensionsSupported;
+}
+
+bool VulkanRenderer::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+    uint32_t extensionCount;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
+                                         availableExtensions.data());
+
+    std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+    for (const auto &extension : availableExtensions) {
+        LOG_VERBOSE("Found device extension " + std::string(extension.extensionName));
+
+        std::size_t erased = requiredExtensions.erase(extension.extensionName);
+        if (erased > 0) {
+            LOG_DEBUG("Found required device extension " + std::string(extension.extensionName));
+        }
+    }
+
+    if (!requiredExtensions.empty()) {
+        for (const auto &missing : requiredExtensions) {
+            LOG_WARN("Missing device extension: " + std::string(missing));
+        }
+    }
+
+    return requiredExtensions.empty();
 }
 
 VulkanRenderer::QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalDevice device) {
@@ -349,13 +396,39 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderer::debugCallback(
         {VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT, "Warning"},
         {VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT, "Error"}};
 
-    // Log formatted debug message
-    LOG_DEBUG("SEVERITY = " + messageSeverityTypes[messageSeverity] +
-              ", TYPE = " + messageTypes[messageType] + ": " + pCallbackData->pMessage);
-
-    // Optionally log user data
-    if (pUserData != nullptr) {
-        LOG_DEBUG("User data: " + std::string((char *)pUserData));
+    // Log formatted debug message at relevant log-level
+    std::string message = "SEVERITY = " + messageSeverityTypes[messageSeverity] +
+                          ", TYPE = " + messageTypes[messageType] + ": " + pCallbackData->pMessage;
+    switch (messageSeverity) {
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+        LOG_VERBOSE(message);
+        if (pUserData != nullptr) {
+            LOG_VERBOSE("User data: " + std::string((char *)pUserData));
+        }
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+        LOG_INFO(message);
+        if (pUserData != nullptr) {
+            LOG_INFO("User data: " + std::string((char *)pUserData));
+        }
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        LOG_WARN(message);
+        if (pUserData != nullptr) {
+            LOG_WARN("User data: " + std::string((char *)pUserData));
+        }
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+        LOG_ERROR(message);
+        if (pUserData != nullptr) {
+            LOG_ERROR("User data: " + std::string((char *)pUserData));
+        }
+        break;
+    default:
+        LOG_INFO(message);
+        if (pUserData != nullptr) {
+            LOG_INFO("User data: " + std::string((char *)pUserData));
+        }
     }
 
     return VK_FALSE; // Always return false to not interrupt Vulkan calls
