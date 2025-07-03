@@ -1,12 +1,14 @@
 
 #pragma once
 #define GLFW_INCLUDE_VULKAN
+#include "logger.hpp"
 #include "surface_provider.hpp"
 #include <GLFW/glfw3.h>
 #include <cstring>
 #include <iostream>
 #include <map>
 #include <optional>
+#include <set>
 #include <vector>
 
 /// @brief List of Vulkan validation layers to enable (if supported)
@@ -91,6 +93,9 @@ class VulkanRenderer {
 
     /// @brief Graphics queue retrieved from the logical device
     VkQueue graphicsQueue;
+
+    /// @brief Present queue retrieved from the logical device (if surface attached)
+    VkQueue presentQueue;
 
     /// @brief The Vulkan surface used for presentation, if attached (may be VK_NULL_HANDLE for
     /// headless rendering)
