@@ -120,6 +120,9 @@ class VulkanRenderer {
     /// @brief The list of images associated with the swapchain
     std::vector<VkImage> swapChainImages;
 
+    /// @brief Image views created from the swapchain images for use in framebuffers
+    std::vector<VkImageView> swapChainImageViews;
+
     /// @brief The format used by the swapchain images
     VkFormat swapChainImageFormat;
 
@@ -209,6 +212,11 @@ class VulkanRenderer {
      * and extent for the swap chain configuration
      */
     void createSwapChain();
+
+    /**
+     * @brief Creates image views for all images in the swapchain
+     */
+    void createImageViews();
 
     /**
      * @brief Checks if a given physical device is suitable for use
