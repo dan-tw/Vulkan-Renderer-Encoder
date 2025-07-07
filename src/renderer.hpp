@@ -4,8 +4,10 @@
 #include "logger.hpp"
 #include "surface_provider.hpp"
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include <cstring>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <optional>
 #include <set>
@@ -112,7 +114,20 @@ class VulkanRenderer {
     /// headless rendering)
     VkSurfaceKHR surface = VK_NULL_HANDLE;
 
-    /// @brief Optional surface provider used to create a rendering surface (e.g. window surface)
+    /// @brief The Vulkan swapchain used for presenting rendered images to the surface
+    VkSwapchainKHR swapChain = VK_NULL_HANDLE;
+
+    /// @brief The list of images associated with the swapchain
+    std::vector<VkImage> swapChainImages;
+
+    /// @brief The format used by the swapchain images
+    VkFormat swapChainImageFormat;
+
+    /// @brief The resolution of the swapchain images
+    VkExtent2D swapChainExtent;
+
+    /// @brief Optional surface provider used to create a rendering surface (e.g. window
+    /// surface)
     SurfaceProvider *surfaceProvider;
 
     /// @brief List of Vulkan validation layers to enable (if supported)
@@ -188,6 +203,14 @@ class VulkanRenderer {
     void createLogicalDevice();
 
     /**
+     * @brief Creates the Vulkan swap chain.
+     *
+     * Queries surface capabilities and selects optimal surface format, present mode,
+     * and extent for the swap chain configuration
+     */
+    void createSwapChain();
+
+    /**
      * @brief Checks if a given physical device is suitable for use
      *
      * Currently checks for graphics queue family support
@@ -231,6 +254,37 @@ class VulkanRenderer {
      *         supported formats, and present modes for the specified device
      */
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+
+    /**
+     * @brief Chooses the preferred surface format for the swap chain.
+     *
+     * Prefers "VK_FORMAT_B8G8R8A8_SRGB" with "VK_COLOR_SPACE_SRGB_NONLINEAR_KHR" if available,
+     * otherwise, returns the first supported format
+     *
+     * @param availableFormats List of supported surface formats
+     * @return Chosen VkSurfaceFormatKHR
+     */
+    VkSurfaceFormatKHR
+    chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+
+    /**
+     * @brief Selects the desired present mode for the swap chain.
+     *
+     * Prefers "VK_PRESENT_MODE_MAILBOX_KHR" for low-latency presentation. Falls back to
+     * "VK_PRESENT_MODE_FIFO_KHR", which is always available.
+     *
+     * @param availablePresentModes List of supported presentation modes
+     * @return Chosen VkPresentModeKHR
+     */
+    VkPresentModeKHR
+    chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+
+    /**
+     * @brief Selects the optimal swap extent (resolution) for the swap chain.
+     * @param capabilities The surface capabilities queried from the physical device
+     * @return A VkExtent2D defining the width and height of the swap chain images
+     */
+    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
     /**
      * @brief Checks if the requested validation layers are available

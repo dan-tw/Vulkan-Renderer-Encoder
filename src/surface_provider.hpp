@@ -20,4 +20,11 @@ class SurfaceProvider {
      * @brief Returns any Vulkan instance extensions required to support the surface
      */
     virtual std::vector<const char *> getRequiredInstanceExtensions() const = 0;
+
+    /**
+     * @brief Retrieves the current size of the framebuffer in pixels
+     * @param width Reference to an integer that will receive the framebuffer width
+     * @param height Reference to an integer that will receive the framebuffer height
+     */
+    virtual void getFrameBufferSize(int *width, int *height) const = 0;
 };

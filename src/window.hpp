@@ -51,6 +51,13 @@ class VulkanWindow : public SurfaceProvider {
     std::vector<const char *> getRequiredInstanceExtensions() const override;
 
     /**
+     * @brief Retrieves the current size of the framebuffer in pixels
+     * @param width Reference to an integer that will receive the framebuffer width
+     * @param height Reference to an integer that will receive the framebuffer height
+     */
+    void getFrameBufferSize(int *width, int *height) const override;
+
+    /**
      * @brief Gets the raw GLFW window pointer
      * @return Pointer to the GLFWwindow created by this window class
      */

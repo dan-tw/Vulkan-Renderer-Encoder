@@ -58,6 +58,10 @@ std::vector<const char *> VulkanWindow::getRequiredInstanceExtensions() const {
     return std::vector<const char *>(glfwExtensions, glfwExtensions + glfwExtensionCount);
 }
 
+void VulkanWindow::getFrameBufferSize(int *width, int *height) const {
+    glfwGetFramebufferSize(window, width, height);
+}
+
 GLFWwindow *VulkanWindow::getGLFWWindow() const {
     return window;
 }
