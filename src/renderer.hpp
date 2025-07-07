@@ -22,6 +22,25 @@ class VulkanRenderer {
 
   public:
     /**
+     * @struct SwapChainSupportDetails
+     * @brief Holds details about swap chain support for a physical device
+     *
+     * This structure is populated by querying the Vulkan physical device and surface
+     * for information needed to create a swap chain. It includes capabilities,
+     * supported surface formats, and present modes
+     */
+    struct SwapChainSupportDetails {
+        /// @brief Surface capabilities, such as min/max image count and size
+        VkSurfaceCapabilitiesKHR capabilities;
+
+        /// @brief List of supported surface formats
+        std::vector<VkSurfaceFormatKHR> formats;
+
+        /// @brief List of supported presentation modes
+        std::vector<VkPresentModeKHR> presentModes;
+    };
+
+    /**
      * @brief Holds indices of queue families supported by a physical device
      *
      * This struct is used to track which queue families (e.g. graphics, compute, etc.)
@@ -31,6 +50,8 @@ class VulkanRenderer {
     struct QueueFamilyIndices {
         /// @brief Index of a queue family that supports graphics commands
         std::optional<uint32_t> graphicsFamily;
+
+        /// @brief Index of a queue family that supports presenting/drawing
         std::optional<uint32_t> presentFamily;
 
         /**
@@ -186,7 +207,30 @@ class VulkanRenderer {
      */
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
+    /**
+     * @brief Checks whether a physical device supports all required Vulkan device extensions
+     *
+     * This function queries all available extensions on the provided Vulkan physical device
+     * and compares them against the list of required extensions defined in "deviceExtensions".
+     * It logs found and missing extensions for debugging purposes.
+     *
+     * @param device The Vulkan physical device to query for extension support.
+     * @return true if all required extensions are supported by the device, false otherwise.
+     */
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+
+    /**
+     * @brief Queries the swap chain support details for a given physical device
+     *
+     * This function checks the capabilities, supported formats, and present modes
+     * of the swap chain for the currently attached Vulkan surface (if any).
+     * If no surface is present (headless mode), the returned details will be empty
+     *
+     * @param device The physical Vulkan device to query.
+     * @return A SwapChainSupportDetails struct containing surface capabilities,
+     *         supported formats, and present modes for the specified device
+     */
+    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 
     /**
      * @brief Checks if the requested validation layers are available

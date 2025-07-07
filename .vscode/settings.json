@@ -2,7 +2,8 @@
     "cSpell.words": [
         "GLFW",
         "optimise",
-        "swapchain"
+        "swapchain",
+        "VKAPI"
     ],
     "files.insertFinalNewline": true,
     "editor.defaultFormatter": "ms-vscode.cpptools",

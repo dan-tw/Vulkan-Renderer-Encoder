@@ -236,6 +236,18 @@ bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device) {
     QueueFamilyIndices indicies = findQueueFamilies(device);
     bool extensionsSupported = checkDeviceExtensionSupport(device);
 
+    bool swapChainAdequate = true; // If no surface attached simply set this to true
+    if (surface != VK_NULL_HANDLE) {
+        swapChainAdequate = false;
+        if (extensionsSupported) {
+            // Swap chain support is sufficient for this tutorial if there is at least one supported
+            // image format and one supported presentation mode
+            SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+            swapChainAdequate =
+                !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+        }
+    }
+
     if (!indicies.isComplete(surface)) {
         LOG_WARN("Device " + std::string(deviceProperties.deviceName) +
                  " is missing required queue families");
@@ -246,7 +258,12 @@ bool VulkanRenderer::isDeviceSuitable(VkPhysicalDevice device) {
                  " is missing required extensions");
     }
 
-    return indicies.isComplete(surface) && extensionsSupported;
+    if (surface != VK_NULL_HANDLE && !swapChainAdequate) {
+        LOG_WARN("Device " + std::string(deviceProperties.deviceName) +
+                 " is missing swap chain support");
+    }
+
+    return indicies.isComplete(surface) && extensionsSupported && swapChainAdequate;
 }
 
 bool VulkanRenderer::checkDeviceExtensionSupport(VkPhysicalDevice device) {
@@ -309,6 +326,35 @@ VulkanRenderer::QueueFamilyIndices VulkanRenderer::findQueueFamilies(VkPhysicalD
     }
 
     return indices;
+}
+
+VulkanRenderer::SwapChainSupportDetails
+VulkanRenderer::querySwapChainSupport(VkPhysicalDevice device) {
+    SwapChainSupportDetails details;
+
+    if (surface != VK_NULL_HANDLE) {
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+
+        if (formatCount != 0) {
+            details.formats.resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount,
+                                                 details.formats.data());
+        }
+
+        uint32_t presentModeCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+
+        if (presentModeCount != 0) {
+            details.presentModes.resize(presentModeCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount,
+                                                      details.presentModes.data());
+        }
+    }
+
+    return details;
 }
 
 bool VulkanRenderer::checkValidationLayerSupport() {
