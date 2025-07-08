@@ -142,6 +142,15 @@ class VulkanRenderer {
     /// @brief The graphics pipeline encapsulating all fixed function and programmable stages
     VkPipeline graphicsPipeline;
 
+    /// @brief Framebuffers for each image in the swap chain
+    std::vector<VkFramebuffer> swapChainFramebuffers;
+
+    /// @brief Command pool used to allocate Vulkan command buffers
+    VkCommandPool commandPool;
+
+    /// @brief Primary command buffer used for recording rendering commands
+    VkCommandBuffer commandBuffer;
+
     /// @brief List of Vulkan validation layers to enable (if supported)
     const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
@@ -248,6 +257,50 @@ class VulkanRenderer {
      * @throws std::runtime_error if the render pass creation fails
      */
     void createRenderPass();
+
+    /**
+     * @brief Creates framebuffers for each swap chain image view
+     *
+     * Sets up one framebuffer per image view in the swap chain, using the render pass.
+     * These framebuffers are used as rendering targets during drawing operations
+     *
+     * @throws std::runtime_error if framebuffer creation fails
+     */
+    void createFramebuffers();
+
+    /**
+     * @brief Creates a command pool for allocating command buffers
+     *
+     * Finds the graphics queue family index and creates a command pool
+     * with the flag to allow resetting individual command buffers
+     *
+     * @throws std::runtime_error if command pool creation fails
+     */
+    void createCommandPool();
+
+    /**
+     * @brief Allocates a primary command buffer from the command pool
+     *
+     * Requests allocation of a single primary command buffer
+     * from the previously created command pool
+     *
+     * @throws std::runtime_error if command buffer allocation fails
+     */
+    void createCommandBuffer();
+
+    /**
+     * @brief Records commands into the given command buffer for rendering a frame
+     *
+     * Begins command buffer recording, starts the render pass, binds the graphics pipeline,
+     * sets the viewport and scissor to cover the entire swap chain extent, issues a draw call,
+     * and ends the render pass and command buffer
+     *
+     * @param commandBuffer The command buffer to record commands into
+     * @param imageIndex Index of the swap chain image to render to (used to select framebuffer)
+     *
+     * @throws std::runtime_error if beginning or ending command buffer recording fails
+     */
+    void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
     /**
      * @brief Creates a Vulkan shader module from SPIR-V bytecode
