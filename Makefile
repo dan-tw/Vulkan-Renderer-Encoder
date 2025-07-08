@@ -50,15 +50,21 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 # === Utility Targets ===
-.PHONY: test clean rebuild format
+.PHONY: test clean rebuild format shaders
 
 test: $(TARGET)
 	./$(TARGET)
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
+	rm shaders/*.spv
 
-rebuild: clean $(TARGET)
+rebuild: clean shaders $(TARGET)
 
 format:
 	clang-format -i $(wildcard src/*.cpp src/*.hpp)
+
+shaders:
+	glslc shaders/shader.vert -o shaders/vert.spv
+	glslc shaders/shader.frag -o shaders/frag.spv
+

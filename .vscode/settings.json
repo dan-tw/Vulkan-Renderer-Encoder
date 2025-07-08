@@ -1,7 +1,11 @@
 {
     "cSpell.words": [
         "GLFW",
+        "Multisample",
+        "multisampling",
         "optimise",
+        "SPIR",
+        "Subpasses",
         "swapchain",
         "VKAPI"
     ],

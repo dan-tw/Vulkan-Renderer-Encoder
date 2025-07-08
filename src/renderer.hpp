@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -82,14 +83,13 @@ class VulkanRenderer {
      */
     ~VulkanRenderer();
 
-    void drawFrame();
-    void captureFrame();
-
     /**
      * @brief Returns the Vulkan instance associated with this renderer
      * @return The VkInstance used for all Vulkan operations
      */
     VkInstance getInstance() const;
+
+    static std::vector<char> readFile(const std::string &filename);
 
   protected:
     /// @brief The Vulkan instance used by the renderer
@@ -132,6 +132,15 @@ class VulkanRenderer {
     /// @brief Optional surface provider used to create a rendering surface (e.g. window
     /// surface)
     SurfaceProvider *surfaceProvider;
+
+    /// @brief Vulkan render pass defining attachments and subpasses used during rendering
+    VkRenderPass renderPass;
+
+    /// @brief Pipeline layout specifying descriptor set layouts and push constants for the pipeline
+    VkPipelineLayout pipelineLayout;
+
+    /// @brief The graphics pipeline encapsulating all fixed function and programmable stages
+    VkPipeline graphicsPipeline;
 
     /// @brief List of Vulkan validation layers to enable (if supported)
     const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
@@ -217,6 +226,40 @@ class VulkanRenderer {
      * @brief Creates image views for all images in the swapchain
      */
     void createImageViews();
+
+    /**
+     * @brief Creates the Vulkan graphics pipeline
+     *
+     * This function loads and compiles shader modules, sets up fixed function stages,
+     * configures pipeline state objects (such as rasterizer, input assembly, color blending, etc.),
+     * and creates the graphics pipeline using vkCreateGraphicsPipelines.
+     *
+     * @throws std::runtime_error if the pipeline or layout creation fails
+     */
+    void createGraphicsPipeline();
+
+    /**
+     * @brief Creates a basic Vulkan render pass
+     *
+     * Configures a single-color attachment render pass suitable for on-screen rendering
+     * Sets load/store operations, layout transitions, and defines a basic subpass with a single
+     * attachment
+     *
+     * @throws std::runtime_error if the render pass creation fails
+     */
+    void createRenderPass();
+
+    /**
+     * @brief Creates a Vulkan shader module from SPIR-V bytecode
+     *
+     * Takes raw SPIR-V binary data and wraps it in a VkShaderModule, which can be used
+     * for pipeline shader stages
+     *
+     * @param code The SPIR-V bytecode of the shader
+     * @return A VkShaderModule representing the compiled shader
+     * @throws std::runtime_error if shader module creation fails
+     */
+    VkShaderModule createShaderModule(const std::vector<char> &code);
 
     /**
      * @brief Checks if a given physical device is suitable for use

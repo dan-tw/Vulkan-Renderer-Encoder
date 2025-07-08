@@ -44,3 +44,4 @@
 build
 VulkanTest
 thirdparty
+*.spv
