@@ -89,10 +89,28 @@ class VulkanRenderer {
      */
     VkInstance getInstance() const;
 
+    /**
+     * @brief Waits for the logical device to become idle.
+     */
     void waitForLogicalDevices();
 
+    /**
+     * @brief Draws a single frame to the screen.
+     */
     void drawFrame();
 
+    /**
+     * @brief Reads the contents of a binary file into a byte buffer.
+     *
+     * Opens the specified file in binary mode and reads all contents into a std::vector<char>.
+     * This is typically used for reading SPIR-V shader files or other binary assets needed for
+     * Vulkan rendering
+     *
+     * @param filename The path to the file to be read
+     * @return A vector containing the binary contents of the file
+     *
+     * @throws std::runtime_error if the file cannot be opened
+     */
     static std::vector<char> readFile(const std::string &filename);
 
   protected:
@@ -155,9 +173,18 @@ class VulkanRenderer {
     /// @brief Primary command buffer used for recording rendering commands
     std::vector<VkCommandBuffer> commandBuffers;
 
+    /// @brief Semaphores used to signal when an image has been acquired and is ready for rendering
     std::vector<VkSemaphore> imageAvailableSemaphores;
+
+    /// @brief Semaphores used to signal when rendering has finished and an image is ready for
+    /// presentation
     std::vector<VkSemaphore> renderFinishedSemaphores;
+
+    /// @brief Fences used to synchronize CPU-GPU so that we do not submit new frames until the GPU
+    /// is done processing previous ones
     std::vector<VkFence> inFlightFences;
+
+    /// @brief Index of the current frame being rendered
     uint32_t currentFrame = 0;
 
     /// @brief List of Vulkan validation layers to enable (if supported)
@@ -169,6 +196,7 @@ class VulkanRenderer {
         VK_KHR_VIDEO_QUEUE_EXTENSION_NAME, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
         VK_KHR_VIDEO_ENCODE_QUEUE_EXTENSION_NAME, VK_KHR_VIDEO_ENCODE_H264_EXTENSION_NAME};
 
+    /// @brief Maximum number of frames that can be processed concurrently
     const int maxFramesInFlight = 2;
 
     /// @brief Whether to enable validation layers (only in debug builds)
@@ -243,6 +271,11 @@ class VulkanRenderer {
     void createSwapChain();
 
     /**
+     * @brief Recreates the swap chain and all associated resources
+     */
+    void recreateSwapChain();
+
+    /**
      * @brief Creates image views for all images in the swapchain
      */
     void createImageViews();
@@ -299,6 +332,9 @@ class VulkanRenderer {
      */
     void createCommandBuffers();
 
+    /**
+     * @brief Creates synchronization primitives used for rendering frames.
+     */
     void createSyncObjects();
 
     /**
@@ -414,6 +450,11 @@ class VulkanRenderer {
      * @return A list of extension names
      */
     std::vector<const char *> getRequiredExtensions();
+
+    /**
+     * @brief Cleans up resources associated with the Vulkan swap chain.
+     */
+    void cleanupSwapChain();
 
     /**
      * @brief Shuts down the renderer and releases resources

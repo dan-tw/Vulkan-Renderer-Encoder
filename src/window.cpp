@@ -20,7 +20,8 @@ void VulkanWindow::init() {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
     // Disable window resizing
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
 
     // Create the GLFW window. We're not using fullscreen (4th param) or OpenGL sharing (5th param)
     window = glfwCreateWindow(width, height, "Vulkan", nullptr, nullptr);
