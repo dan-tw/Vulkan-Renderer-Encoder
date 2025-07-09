@@ -153,11 +153,12 @@ class VulkanRenderer {
     VkCommandPool commandPool;
 
     /// @brief Primary command buffer used for recording rendering commands
-    VkCommandBuffer commandBuffer;
+    std::vector<VkCommandBuffer> commandBuffers;
 
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
-    VkFence inFlightFence;
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence> inFlightFences;
+    uint32_t currentFrame = 0;
 
     /// @brief List of Vulkan validation layers to enable (if supported)
     const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
@@ -167,6 +168,8 @@ class VulkanRenderer {
     std::vector<const char *> deviceExtensions = {
         VK_KHR_VIDEO_QUEUE_EXTENSION_NAME, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
         VK_KHR_VIDEO_ENCODE_QUEUE_EXTENSION_NAME, VK_KHR_VIDEO_ENCODE_H264_EXTENSION_NAME};
+
+    const int maxFramesInFlight = 2;
 
     /// @brief Whether to enable validation layers (only in debug builds)
 #ifdef NDEBUG
@@ -294,7 +297,7 @@ class VulkanRenderer {
      *
      * @throws std::runtime_error if command buffer allocation fails
      */
-    void createCommandBuffer();
+    void createCommandBuffers();
 
     void createSyncObjects();
 
