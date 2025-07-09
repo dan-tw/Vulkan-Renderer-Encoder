@@ -38,7 +38,7 @@ VkSurfaceKHR VulkanWindow::createSurface(VkInstance instance) {
     return surface;
 }
 
-void VulkanWindow::pollEvents() const {
+void VulkanWindow::pollEvents(const std::function<void()> &drawCallback) const {
 
     if (window == nullptr) {
         throw std::runtime_error("cannot poll window events, window is null");
@@ -47,6 +47,7 @@ void VulkanWindow::pollEvents() const {
     // Main window loop: poll events until the user closes the window
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
+        drawCallback();
     }
 }
 

@@ -2,6 +2,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include "surface_provider.hpp"
 #include <GLFW/glfw3.h>
+#include <functional>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -35,7 +36,7 @@ class VulkanWindow : public SurfaceProvider {
     /**
      * @brief Starts the event loop for the window
      */
-    void pollEvents() const;
+    void pollEvents(const std::function<void()> &drawCallback) const;
 
     /**
      * @brief Creates a Vulkan-compatible surface from the GLFW window

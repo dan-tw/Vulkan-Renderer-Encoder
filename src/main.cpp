@@ -22,7 +22,9 @@ int main() {
         VulkanRenderer renderer = VulkanRenderer(&window);
 
         // Show the window and start the event loop
-        window.pollEvents();
+        window.pollEvents([&]() { renderer.drawFrame(); });
+
+        renderer.waitForLogicalDevices();
     } catch (std::exception &e) {
         // Print any exception message and exit with failure
         LOG_ERROR(e.what());

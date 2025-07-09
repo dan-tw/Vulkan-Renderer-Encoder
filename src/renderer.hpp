@@ -89,6 +89,10 @@ class VulkanRenderer {
      */
     VkInstance getInstance() const;
 
+    void waitForLogicalDevices();
+
+    void drawFrame();
+
     static std::vector<char> readFile(const std::string &filename);
 
   protected:
@@ -150,6 +154,10 @@ class VulkanRenderer {
 
     /// @brief Primary command buffer used for recording rendering commands
     VkCommandBuffer commandBuffer;
+
+    VkSemaphore imageAvailableSemaphore;
+    VkSemaphore renderFinishedSemaphore;
+    VkFence inFlightFence;
 
     /// @brief List of Vulkan validation layers to enable (if supported)
     const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
@@ -287,6 +295,8 @@ class VulkanRenderer {
      * @throws std::runtime_error if command buffer allocation fails
      */
     void createCommandBuffer();
+
+    void createSyncObjects();
 
     /**
      * @brief Records commands into the given command buffer for rendering a frame
