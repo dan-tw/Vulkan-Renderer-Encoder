@@ -198,6 +198,7 @@ class VulkanRenderer {
 
     /// @brief Maximum number of frames that can be processed concurrently
     const int maxFramesInFlight = 2;
+    uint32_t swapchainImageCount = 0;
 
     /// @brief Whether to enable validation layers (only in debug builds)
 #ifdef NDEBUG

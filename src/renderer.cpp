@@ -798,43 +798,52 @@ void VulkanRenderer::waitForLogicalDevices() {
 }
 
 void VulkanRenderer::createSyncObjects() {
-    imageAvailableSemaphores.resize(maxFramesInFlight);
-    renderFinishedSemaphores.resize(maxFramesInFlight);
+    // Query how many swapchain images we have
+    vkGetSwapchainImagesKHR(device, swapChain, &swapchainImageCount, nullptr);
+
+    // Allocate per-image semaphores
+    imageAvailableSemaphores.resize(swapchainImageCount);
+    renderFinishedSemaphores.resize(swapchainImageCount);
+
+    // Per-frame fences (used for CPU-GPU synchronization)
     inFlightFences.resize(maxFramesInFlight);
 
-    VkSemaphoreCreateInfo semaphoreInfo = {};
+    VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    VkFenceCreateInfo fenceInfo = {};
+    VkFenceCreateInfo fenceInfo{};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (size_t i = 0; i < (size_t)maxFramesInFlight; i++) {
+    for (size_t i = 0; i < (size_t)swapchainImageCount; ++i) {
         if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) !=
                 VK_SUCCESS ||
             vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
-                VK_SUCCESS ||
-            vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
-
-            throw std::runtime_error("failed to create synchronization objects for a frame");
+                VK_SUCCESS) {
+            throw std::runtime_error("failed to create semaphores for swapchain images");
         }
     }
 
-    LOG_INFO("Synchronization objects created.");
+    for (size_t i = 0; i < (size_t)maxFramesInFlight; ++i) {
+        if (vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create fences for frames in flight");
+        }
+    }
+
+    LOG_INFO("Synchronization objects created (per image).");
 }
 
 void VulkanRenderer::drawFrame() {
-
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
     VkResult result =
-        vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame],
+        vkAcquireNextImageKHR(device, swapChain, UINT64_MAX,
+                              imageAvailableSemaphores[currentFrame], // Used only to gate rendering
                               VK_NULL_HANDLE, &imageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         recreateSwapChain();
-        LOG_INFO("Swapchain recreated.");
         return;
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("failed to acquire swap chain image");
@@ -844,7 +853,7 @@ void VulkanRenderer::drawFrame() {
     vkResetCommandBuffer(commandBuffers[currentFrame], 0);
     recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
 
-    VkSubmitInfo submitInfo = {};
+    VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
     VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
@@ -856,7 +865,7 @@ void VulkanRenderer::drawFrame() {
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
 
-    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[imageIndex]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -864,19 +873,23 @@ void VulkanRenderer::drawFrame() {
         throw std::runtime_error("failed to submit draw command buffer");
     }
 
-    VkPresentInfoKHR presentInfo = {};
+    VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
     VkSwapchainKHR swapChains[] = {swapChain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
-
     presentInfo.pImageIndices = &imageIndex;
 
-    vkQueuePresentKHR(presentQueue, &presentInfo);
+    result = vkQueuePresentKHR(presentQueue, &presentInfo);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+        recreateSwapChain();
+    } else if (result != VK_SUCCESS) {
+        throw std::runtime_error("failed to present swap chain image");
+    }
 
     currentFrame = (currentFrame + 1) % maxFramesInFlight;
 }
@@ -943,17 +956,23 @@ void VulkanRenderer::shutdown() {
 
     vkDestroyPipeline(device, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-
     vkDestroyRenderPass(device, renderPass, nullptr);
 
-    for (size_t i = 0; i < (size_t)maxFramesInFlight; i++) {
-        vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
-        vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-        vkDestroyFence(device, inFlightFences[i], nullptr);
+    // Destroy per-image semaphores (sized by swapchain image count)
+    for (VkSemaphore semaphore : renderFinishedSemaphores) {
+        vkDestroySemaphore(device, semaphore, nullptr);
+    }
+
+    for (VkSemaphore semaphore : imageAvailableSemaphores) {
+        vkDestroySemaphore(device, semaphore, nullptr);
+    }
+
+    // Destroy per-frame fences (sized by maxFramesInFlight)
+    for (VkFence fence : inFlightFences) {
+        vkDestroyFence(device, fence, nullptr);
     }
 
     vkDestroyCommandPool(device, commandPool, nullptr);
-
     vkDestroyDevice(device, nullptr);
 
     if (enableValidationLayers) {
