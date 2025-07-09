@@ -9,6 +9,24 @@ VkInstance VulkanRenderer::getInstance() const {
     return instance;
 }
 
+VkDevice VulkanRenderer::getDevice() const {
+    return device;
+}
+
+VkPhysicalDevice VulkanRenderer::getPhysicalDevice() const {
+    return physicalDevice;
+}
+
+uint32_t VulkanRenderer::getGraphicsQueueFamilyIndex() {
+    QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+
+    if (!indices.graphicsFamily.has_value()) {
+        throw std::runtime_error("failed to find graphics queue family");
+    }
+
+    return indices.graphicsFamily.value();
+}
+
 std::vector<char> VulkanRenderer::readFile(const std::string &filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 

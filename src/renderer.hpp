@@ -90,6 +90,24 @@ class VulkanRenderer {
     VkInstance getInstance() const;
 
     /**
+     * @brief Returns the Vulkan device associated with this renderer
+     * @return The VkDevice used for all Vulkan operations
+     */
+    VkDevice getDevice() const;
+
+    /**
+     * @brief Returns the physical device associated with this renderer
+     * @return The VkPhysicalDevice picked that supports the necessary Vulkan extensions
+     */
+    VkPhysicalDevice getPhysicalDevice() const;
+
+    /**
+     * @brief Returns the index to the graphics queue family for the renderer
+     * @return The index to the graphics queue family for the renderer
+     */
+    uint32_t getGraphicsQueueFamilyIndex();
+
+    /**
      * @brief Waits for the logical device to become idle.
      */
     void waitForLogicalDevices();

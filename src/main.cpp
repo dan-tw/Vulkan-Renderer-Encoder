@@ -1,3 +1,4 @@
+#include "encoder.hpp"
 #include "logger.hpp"
 #include "renderer.hpp"
 #include "window.hpp"
